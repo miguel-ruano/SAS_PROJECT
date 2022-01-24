@@ -1,0 +1,9 @@
+bind = '0.0.0.0:80'
+backlog = 2048
+timeout = 30
+keepalive = 2
+reload = True
+preload = False
+errorlog = '-'
+loglevel = 'debug'
+accesslog = None

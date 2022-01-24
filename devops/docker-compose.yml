@@ -1,0 +1,59 @@
+version: '3.5'
+
+services:
+  mariadb-master:
+    image: docker.io/bitnami/mariadb:10.6
+    ports:
+      - '3306:3306'
+    volumes:
+      - 'mariadb_master_data:/bitnami/mariadb'
+    environment:
+      - MARIADB_REPLICATION_MODE=master
+      - MARIADB_REPLICATION_USER=repl_user
+      - MARIADB_USER=${DB_USER}
+      - MARIADB_PASSWORD=${DB_PASS}
+      - MARIADB_DATABASE=${DB_NAME}
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - MARIADB_ROOT_PASSWORD=rootAPP
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+  mariadb-slave:
+    image: docker.io/bitnami/mariadb:10.6
+    ports:
+      - '3306'
+    depends_on:
+      - mariadb-master
+    environment:
+      - MARIADB_REPLICATION_MODE=slave
+      - MARIADB_REPLICATION_USER=repl_user
+      - MARIADB_USER=slave_user
+      - MARIADB_DATABASE=${DB_NAME}
+      - MARIADB_MASTER_HOST=mariadb-master
+      - MARIADB_MASTER_PORT_NUMBER=3306
+      - MARIADB_MASTER_ROOT_PASSWORD=rootAPP
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+  app:
+    build:
+      context: ..
+      dockerfile: ./devops/service.Dockerfile
+    image: sass/beer-app
+    environment:
+      - "DB_HOST=mariadb-master"
+      - "DB_USER=${DB_USER}"
+      - "DB_PASS=${DB_PASS}"
+      - "DB_NAME=${DB_NAME}"
+    ports:
+      - "82:80"
+
+volumes:
+  mariadb_master_data:
+    driver: local

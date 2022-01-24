@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+{% block body %}
+
+<center><h3>Tabla de clasificación del consumidor</h3></center>
+<table class="table table-striped table-bordered bg-active table-sm">
+    <tr class="table-dark" align="center" >
+        <td>Id</td>
+        <td>Contacto</td>
+        <td>Telefono</td>
+        <td>Correo</td>
+        <td>Respuesta 1</td>
+        <td>Respuesta 2</td>
+        <td>Respuesta 3</td>
+        <td>Respuesta 4</td>
+        <td>Respuesta 5</td>
+        <td>Respuesta 6</td>
+        <td>Respuesta 7</td>
+        <td>Respuesta 8</td>
+    </tr>
+    <tbody>
+        {% for contacto in contactos %}
+            <tr align="center">
+                <td>{{contacto.0}}</td>
+                <td>{{contacto.1}}</td>
+                <td>{{contacto.2}}</td>
+                <td>{{contacto.3}}</td>
+                <td>{{contacto.4}}</td>
+                <td>{{contacto.5}}</td>
+                <td>{{contacto.6}}</td>
+                <td>{{contacto.7}}</td>
+                <td>{{contacto.8}}</td>
+                <td>{{contacto.9}}</td>
+                <td>{{contacto.10}}</td>
+                <td>{{contacto.11}}</td>
+            </tr>
+
+        {% endfor %}
+    </tbody>
+    
+</table>
+
+{% endblock %}
