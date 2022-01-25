@@ -54,6 +54,8 @@ services:
       - "DB_NAME=${DB_NAME}"
     ports:
       - "82:80"
+    depends_on:
+      - mariadb-master
 
 volumes:
   mariadb_master_data:
