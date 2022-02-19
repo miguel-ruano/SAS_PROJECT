@@ -12,6 +12,7 @@ app.config['MYSQL_HOST']= os.environ.get('DB_HOST','localhost')
 app.config['MYSQL_USER']= os.environ.get('DB_USER','root')
 app.config['MYSQL_PASSWORD']= os.environ.get('DB_PASSWORD','root')
 app.config['MYSQL_DB']= os.environ.get('DB_NAME','beers_apps')
+app.config['APP_ALIAS_HOST']= os.environ.get('APP_ALIAS_HOST','app1')
 mysql = MySQL(app)
 
 #settings
@@ -19,8 +20,9 @@ app.secret_key = 'mysecretkey'
 
 
 @app.route("/")
+@app.route("/index")
 def Index():
-    return render_template('/index.html')
+    return render_template('/index.html', alias= app.config['APP_ALIAS_HOST'])
 
 @app.route("/add_contact", methods=['POST'])
 def add_contact():
@@ -48,7 +50,7 @@ def add_contact():
         mysql.connection.commit()        
 
         flash('Información agregada satisfactoriamente')
-        return redirect(url_for('Index')) 
+        return redirect(url_for('Index'))
 
 @app.route("/consulta")
 def consulta():
@@ -63,5 +65,5 @@ def delete_contact():
     return 'delete contact'
 
 
-#if __name__ == '__main__':
-# app.run(port =3000, debug = True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
