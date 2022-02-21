@@ -14,10 +14,11 @@
 
 
 -- Volcando estructura de base de datos para flaskcervezaswww
-CREATE DATABASE IF NOT EXISTS `flaskcervezaswww` /*!40100 DEFAULT CHARACTER SET utf8mb3 */;
-USE `flaskcervezaswww`;
+CREATE DATABASE IF NOT EXISTS `beers_apps` /*!40100 DEFAULT CHARACTER SET utf8mb3 */;
+USE `beers_apps`;
 
 -- Volcando estructura para tabla flaskcervezaswww.contactos
+/*
 CREATE TABLE IF NOT EXISTS `contactos` (
   `Id_contacto` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(200) DEFAULT NULL,
@@ -33,9 +34,32 @@ CREATE TABLE IF NOT EXISTS `contactos` (
   `R_pregunta8` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`Id_contacto`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
+*/
+-- Full_name	Country	Years_old	Gender	Type_beer	Lupulo	% Alcohol
+
+CREATE TABLE IF NOT EXISTS `contactos` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(100) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `years_old` int DEFAULT NULL,
+  `gender` TINYINT DEFAULT NULL,
+  `type_beer` varchar(100) DEFAULT NULL,
+  `lupulo` varchar(10) DEFAULT NULL,
+  `alcohol` float DEFAULT NULL,
+  PRIMARY KEY (`Id_contacto`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
+
+CREATE TABLE IF NOT EXISTS `entrenamiento` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `fecha_entrenamiento` datetime DEFAULT NULL,
+  `metricas_desempenio` varchar(100) DEFAULT NULL,
+  `tamanio_dataset` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
 -- Volcando datos para la tabla flaskcervezaswww.contactos: ~0 rows (aproximadamente)
 /*!40000 ALTER TABLE `contactos` DISABLE KEYS */;
+/*
 REPLACE INTO `contactos` (`Id_contacto`, `nombre`, `telefono`, `correo`, `R_pregunta1`, `R_pregunta2`, `R_pregunta3`, `R_pregunta4`, `R_pregunta5`, `R_pregunta6`, `R_pregunta7`, `R_pregunta8`) VALUES
 	(1, 'Alex', '3257430', 'alex@gmail.com', 'Normalmente', 'Usualmente', 'Fresca y amarga (cuerpo ligero y cremoso)', 'Si', 'Muy poca', 'Si', 'Clásica con hielo (sencilla)', '3.5% - 4'),
 	(2, 'Carlos', '4431985', 'carlos@gmail.com', 'Un poco', 'No', 'Suave y dulce (tonos negros)', 'Si', 'poca', 'Si', 'Michelada con hielo', 'Más del 5%'),
@@ -53,6 +77,7 @@ REPLACE INTO `contactos` (`Id_contacto`, `nombre`, `telefono`, `correo`, `R_preg
 	(14, 'lina maria', '5134223', 'linamaria@gmail.com', 'Un poco', 'Usualmente', 'Malta ahumada o tostada (tonos dorados oscuros)', 'Si', 'poca', 'Si', 'Michelada con hielo', '3.5% - 4'),
 	(15, 'luciana', '5135734', 'luciana@gmail.com', 'No', 'Usualmente', 'Malta ahumada o tostada (tonos dorados oscuros)', 'Si', 'Normal', 'No', 'Michelada o gomichela (sal alrededor)', 'Más del 5%'),
 	(16, 'carolina', '4206631', 'carolina@gmail.com', 'Un poco', 'Usualmente', 'Malta ahumada o tostada (tonos dorados oscuros)', 'No', 'Muy poca', 'Si', 'Cóctel acompañado (limón, naranja, mora, hierbas)', '4.5% - 5%');
+*/
 /*!40000 ALTER TABLE `contactos` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
