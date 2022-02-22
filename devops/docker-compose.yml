@@ -33,7 +33,7 @@ services:
       - MARIADB_USER=slave_user
       - MARIADB_DATABASE=${DB_NAME}
       - MARIADB_MASTER_HOST=mariadb-master
-      - MARIADB_MASTER_PORT_NUMBER=3308
+      - MARIADB_MASTER_PORT_NUMBER=3306
       - MARIADB_MASTER_ROOT_PASSWORD=rootAPP
       # ALLOW_EMPTY_PASSWORD is recommended only for development.
       - ALLOW_EMPTY_PASSWORD=yes
@@ -47,12 +47,16 @@ services:
       context: ..
       dockerfile: ./devops/service.Dockerfile
     image: sass/beer-app
+    volumes:
+      - app_trainer_data:/volumenes/datatrainer
     environment:
       - "DB_HOST=mariadb-master"
       - "DB_USER=root"
       - "DB_PASSWORD=rootAPP"
       - "DB_NAME=beers_apps"
       - "APP_ALIAS_HOST=app1"
+      - "PICKLE_FOLDER=/volumenes/datatrainer"
+      - "DB_PORT=3306"
     ports:
       - "82:80"
     hostname: app
@@ -63,12 +67,16 @@ services:
       context: ..
       dockerfile: ./devops/service.Dockerfile
     image: sass/beer-app
+    volumes: 
+      - app_trainer_data:/volumenes/datatrainer
     environment:
       - "DB_HOST=mariadb-master"
       - "DB_USER=root"
       - "DB_PASSWORD=rootAPP"
       - "DB_NAME=beers_apps"
       - "APP_ALIAS_HOST=app2"
+      - "PICKLE_FOLDER=/volumenes/datatrainer"
+      - "DB_PORT=3306"
     ports:
       - "83:80"
     hostname: app2
@@ -85,4 +93,6 @@ services:
       - app
 volumes:
   mariadb_master_data:
+    driver: local
+  app_trainer_data:
     driver: local

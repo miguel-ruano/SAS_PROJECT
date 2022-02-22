@@ -35,7 +35,7 @@ import random
 app = Flask(__name__)
 
 # Mariadb connection
-app.config['MYSQL_HOST']= os.environ.get('DB_HOST','0.0.0.0') 
+app.config['MYSQL_HOST']= os.environ.get('DB_HOST','localhost') 
 app.config['MYSQL_USER']= os.environ.get('DB_USER','root')
 app.config['MYSQL_PASSWORD']= os.environ.get('DB_PASSWORD','rootAPP')
 app.config['MYSQL_DB']= os.environ.get('DB_NAME','beers_apps')
@@ -44,7 +44,7 @@ app.config['MYSQL_PORT']= int(os.environ.get('DB_PORT','3308'))
 print(app.config['MYSQL_PORT'])
 mysql = MySQL(app)
 
-app.config['PICKLE_FOLDER']= os.environ.get('PICKLE_FOLDER','/home/yesid')
+app.config['PICKLE_FOLDER']= os.environ.get('PICKLE_FOLDER','/home/yesid/Documentos/entrenamientos')
 #settings
 app.secret_key = 'mysecretkey'
 
@@ -53,6 +53,10 @@ app.secret_key = 'mysecretkey'
 @app.route("/index")
 def Index():
     return render_template('/index.html', alias= app.config['APP_ALIAS_HOST'])
+
+@app.route("/prediccion")
+def prediccion():
+    return render_template('/prediccion.html', alias= app.config['APP_ALIAS_HOST'])
 
 @app.route("/add_contact", methods=['POST'])
 def add_contact():
@@ -80,13 +84,51 @@ def consulta():
     cur = mysql.connection.cursor()
     cur.execute('SELECT * FROM contactos')
     data = cur.fetchall()
-    print(data)
-    return render_template('/consulta.html', contactos = data)
+    #print(data)
+    return render_template('/consulta.html', contactos = data, alias= app.config['APP_ALIAS_HOST'])
 
 @app.route("/delete")
 def delete_contact():
     return 'delete contact'
 
+
+@app.route("/trainer")
+def add_trainer():
+    #entrenar
+    metrica, dataset, file_name = trainer()
+    cur = mysql.connection.cursor()
+    cur.execute('INSERT INTO entrenamiento(metricas_desempenio, tamanio_dataset, file_name) VALUES (%s, %s, %s)',
+    (metrica, dataset, file_name)) 
+    mysql.connection.commit()
+    flash('Información de entrenamiento agregada satisfactoriamente')
+    return redirect(url_for('consultaTrainer'))
+
+
+
+@app.route("/consulta-trainers")
+def consultaTrainer():
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * FROM entrenamiento')
+    data = cur.fetchall()
+    #print(data)
+    return render_template('/entrenamiento.html', entrenamiento = data, alias= app.config['APP_ALIAS_HOST'])
+
+@app.route("/predict", methods=['POST'])
+def predict():
+    if request.method == 'POST':
+        edad = request.form['edad']
+        genero = request.form.get('genero')        
+        lupulo = float(request.form.get('lupulo'))/100        
+        alchol = float(request.form.get('alcohol'))/100
+
+        data = load_last_trainer()
+        file = data[3]
+        model = load_model(file)
+        predict = model.predict([[edad, genero, lupulo, alchol]])
+
+        flash('El tipo de cerveza es: '+ predict)
+        return render_template('/prediccion.html', alias= app.config['APP_ALIAS_HOST'])
+"""
 
 @app.route("/trainer")
 def add_trainer():
@@ -117,7 +159,7 @@ def predict():
     model = load_model(file)
     predict = model.predict([[edad, genero, lupulo, alchol]])
     return predict[0], 200 
-
+"""
 def persist_model(model):
     file_name = 'trainer-{}.sav'.format(datetime.datetime.now().strftime('%d-%m-%Y-%H-%M-%S'))
     pickle.dump(model, open("{}/{}".format(app.config['PICKLE_FOLDER'],file_name), 'wb'))
@@ -174,4 +216,4 @@ def trainer():
     
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0')
