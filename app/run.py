@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask.helpers import flash
 from flask.wrappers import Request
 from flask_mysqldb import MySQL
-from datetime import datetime
+import datetime
 
 
 # First, we'll import pandas, a data processing and CSV file I/O library
@@ -29,6 +29,8 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn import preprocessing
 min_max_scaler = preprocessing.MinMaxScaler()
 
+import pickle
+import random
 
 app = Flask(__name__)
 
@@ -42,6 +44,7 @@ app.config['MYSQL_PORT']= int(os.environ.get('DB_PORT','3308'))
 print(app.config['MYSQL_PORT'])
 mysql = MySQL(app)
 
+app.config['PICKLE_FOLDER']= os.environ.get('PICKLE_FOLDER','/home/yesid')
 #settings
 app.secret_key = 'mysecretkey'
 
@@ -60,11 +63,14 @@ def add_contact():
     gender = request.form.get('gender')
     typeBeer = request.form.get('typeBeer')
     lupulo = request.form.get('lupulo')
-    alcohol = request.form.get('alcohol') 
-    #print(fullName+' '+country+' '+yearsOld+' '+gender+' '+typeBeer+' '+lupulo+' '+alcohol)
+    alcohol = request.form.get('alcohol')
+
+    value = lupulo.split('-')
+    lupulo_rand = random.uniform(float(value[0]), float(value[1]))
+
     cur = mysql.connection.cursor()
     cur.execute('INSERT INTO contactos(full_name, country, years_old, gender, type_beer, lupulo, alcohol) VALUES (%s, %s, %s, %s, %s, %s, %s)',
-    (fullName, country, yearsOld, gender, typeBeer, lupulo, alcohol))  
+    (fullName, country, yearsOld, gender, typeBeer, lupulo_rand, alcohol))  
     mysql.connection.commit()
     flash('Información agregada satisfactoriamente')
     return redirect(url_for('Index'))
@@ -84,35 +90,51 @@ def delete_contact():
 
 @app.route("/trainer")
 def add_trainer():
-        fecha = datetime.today()
-        print(fecha)
-        #entrenar
-        map = list(trainer())
-        #obtener metrica
-        metrica = map[0]
-        #obtener tamanio dataset
-        dataset = map[1]
-        cur = mysql.connection.cursor()
-        cur.execute('INSERT INTO entrenamiento(fecha_entrenamiento, metricas_desempenio, tamanio_dataset) VALUES (%s, %s, %s)',
-        (fecha, metrica, dataset)) 
-        mysql.connection.commit()
-        flash('Información de entrenamiento agregada satisfactoriamente')
-        return redirect(url_for('/'))
+    #entrenar
+    metrica, dataset, file_name = trainer()
+    cur = mysql.connection.cursor()
+    cur.execute('INSERT INTO entrenamiento(metricas_desempenio, tamanio_dataset, file_name) VALUES (%s, %s, %s)',
+    (metrica, dataset, file_name)) 
+    mysql.connection.commit()
+    flash('Información de entrenamiento agregada satisfactoriamente')
+    return redirect(url_for('/'))
 
 @app.route("/consulta-trainers")
 def consultaTrainer():
-    cur = mysql.connection.cursor()
-    cur.execute('SELECT * FROM entrenamiento')
-    data = cur.fetchall()
-    print(data)
+    last_trainer = load_last_trainer()
+    response = { 'metricas_desempenio': last_trainer[0], 'tamanio_dataset':last_trainer[1],
+     'fecha_entrenamiento':last_trainer[2]} if last_trainer != None else "not have trainer"
+    return  response, 200
 
+@app.route("/predict")
+def predict():
+    edad = 43
+    genero = 1
+    lupulo = 0.04
+    alchol = 0.03
+    data = load_last_trainer()
+    file = data[3]
+    model = load_model(file)
+    predict = model.predict([[edad, genero, lupulo, alchol]])
+    return predict[0], 200 
+
+def persist_model(model):
+    file_name = 'trainer-{}.sav'.format(datetime.datetime.now().strftime('%d-%m-%Y-%H-%M-%S'))
+    pickle.dump(model, open("{}/{}".format(app.config['PICKLE_FOLDER'],file_name), 'wb'))
+    return file_name
+
+def load_model(file):
+    return pickle.load(open("{}/{}".format(app.config['PICKLE_FOLDER'], file), 'rb'))
+
+def load_last_trainer():
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT metricas_desempenio, tamanio_dataset,fecha_entrenamiento, file_name FROM beers_apps.entrenamiento order by fecha_entrenamiento desc limit 1;')
+    data = cur.fetchall()
+    return data[0] if len(data) > 0 else None
 
 def trainer():
     data = pd.read_sql_query("SELECT * FROM contactos;",mysql.connection)
-    print(data.columns)
-    print(data.shape[0])
     tamanioDataset = data.shape[0]
-   
     # declaracion de modelo y clase
     features = ['years_old', 'gender', 'lupulo','alcohol']
     X = data[features] 
@@ -143,18 +165,13 @@ def trainer():
     #muestra el porcentaje del aprendisaje con los datos
     from sklearn.metrics import classification_report
     print(classification_report(y_test, pred))
-
-
-
+    file_name = persist_model(knn)
     #edad, genero, lupulo, alchol
     #knn.predict([[43, 1, 0.04, 0.03]])
-
-
     #Abrahan McMechan	Japan	43	1	Malta_saborizada	0.0440	0.0300
     #Abba Shellum	France	47	1	Oscura	0.1517	0.0588
-
-    return map[tamanioDataset,accuracy]
-
+    return (accuracy, tamanioDataset, file_name)
+    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)

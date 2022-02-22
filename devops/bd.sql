@@ -44,16 +44,18 @@ CREATE TABLE IF NOT EXISTS `contactos` (
   `years_old` int DEFAULT NULL,
   `gender` TINYINT DEFAULT NULL,
   `type_beer` varchar(100) DEFAULT NULL,
-  `lupulo` varchar(10) DEFAULT NULL,
+  `lupulo` float DEFAULT NULL,
   `alcohol` float DEFAULT NULL,
-  PRIMARY KEY (`Id_contacto`)
+  `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
 CREATE TABLE IF NOT EXISTS `entrenamiento` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `fecha_entrenamiento` datetime DEFAULT NULL,
+  `fecha_entrenamiento` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `metricas_desempenio` varchar(100) DEFAULT NULL,
   `tamanio_dataset` int DEFAULT NULL,
+  `file_name` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
